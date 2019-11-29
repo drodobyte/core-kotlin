@@ -1,4 +1,4 @@
-package drodobytecom.core.kotlin.entity
+package com.drodobyte.core.kotlin.entity
 
 interface Entity {
     val id: Long?
