@@ -29,21 +29,21 @@ class Check {
         }
     }
 
-    class OnError<Err>(private val items: List<Err>) {
+    class OnError<Err>(private val errors: List<Err>) {
 
         /** Observable version **/
         val onError: Observable<Err>
-            get() = if (items.isEmpty())
+            get() = if (errors.isEmpty())
                 Observable.empty<Err>()
             else
-                Observable.error<Err>(CheckException(items))
+                Observable.error<Err>(Ex(errors))
 
         /** Async version **/
         fun onError(action: (List<Err>) -> Unit) {
-            if (items.isNotEmpty())
-                action(items)
+            if (errors.isNotEmpty())
+                action(errors)
         }
     }
 
-    class CheckException(val errors: List<*>) : Exception()
+    class Ex(val errors: List<*>) : Exception()
 }
