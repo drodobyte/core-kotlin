@@ -34,4 +34,14 @@ publishing {
             from components.java
         }
     }
+    repositories {
+        maven {
+            name 'deploy'
+            url System.getenv('deployRepoUrl')
+            credentials {
+                username = System.getenv('deployRepoUsername')
+                password = System.getenv('deployRepoPassword')
+            }
+        }
+    }
 }
