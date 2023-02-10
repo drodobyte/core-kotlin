@@ -1,4 +1,4 @@
-package com.drodobyte.core.kotlin.check
+package drodobyte.core.check
 
 import io.reactivex.Observable
 
