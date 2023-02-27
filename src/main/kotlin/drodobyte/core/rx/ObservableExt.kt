@@ -1,12 +1,14 @@
 package drodobyte.core.rx
 
-import io.reactivex.Completable
+import io.reactivex.Completable.fromAction
 import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
+import io.reactivex.Observable.just
 import io.reactivex.Observer
-import io.reactivex.functions.Action
+import io.reactivex.functions.BiFunction
+import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
 
@@ -16,87 +18,155 @@ import java.util.concurrent.TimeUnit.SECONDS
 typealias In<T> = Observable<T>
 
 /**
- * Write only vars
+ * Write only values
  */
 typealias Out<T> = Observer<T>
 
 /**
- * Read/Write variables
+ * Read/Write values
  */
 typealias InOut<T> = Subject<T>
 
 /**
- * In events
+ * Read event
  */
 typealias In_ = In<Unit>
 
 /**
- * Out events
+ * Write event
  */
-typealias Out_ = Observer<Unit>
+typealias Out_ = Out<Unit>
 
 /**
- * In/Out events
+ * Read/Write event
  */
 typealias InOut_ = InOut<Unit>
 
 /**
- * Complete event
+ * Just one emit
  */
-val Out_.done: Out_ get() = apply { onComplete() }
+val <T> In<T>.once: In<T> get() = take(1)
 
 /**
- * Emit event
+ * No more emits
  */
-val Out_.emit: Out_ get() = apply { onNext(Unit) }
+val <T> In<T>.ignore: In<T> get() = filter { false }
 
 /**
- * Alias for [emit]
+ * Emit items that comply with [cond]
  */
-val Out_.`do`: Out_ get() = emit
+fun <T> In<T>.allow(cond: (T) -> Boolean): In<T> = filter { cond(it) }
 
 /**
- * Emit value
+ * Emit event if item is true
  */
-operator fun <T : Any> Out<T>.plus(t: T): Out<T> = apply { onNext(t) }
+val In<Boolean>.ifTrue: In_ get() = allow { it }.map { }
 
 /**
- * Combine latest into a [Pair]
+ * Emit event if item is false
+ */
+val In<Boolean>.ifFalse: In_ get() = allow { !it }.map { }
+
+/**
+ * Flattens emitter
+ */
+val <T> In<Iterable<T>>.flat: In<T> get() = flatMapIterable { it }
+
+/**
+ * Pairs with previous emitted item
+ */
+val <T> In<T>.withPrev: In<Pair<T, T>>
+    get() = buffer(2, 1).filter { it.size == 2 }.map { it[0] to it[1] }
+
+/**
+ * In pairs of twp emitted items
+ */
+val <T> In<T>.pair: In<Pair<T, T>>
+    get() = buffer(2, 2).filter { it.size == 2 }.map { it[0] to it[1] }
+
+/**
+ * Emits only when distinct from previous
+ */
+val <T> In<T>.distinct: In<T> get() = distinctUntilChanged()
+
+/**
+ * Delays stream a number of units
+ */
+fun In<Number>.delay(unit: TimeUnit): In<Number> = switchMap { just(it).delay(it.toLong(), unit) }
+
+/**
+ * Delays stream a number of seconds
+ */
+val In<Number>.delaySeconds: In<Number> get() = delay(SECONDS)
+
+/**
+ * Delays stream a number of minutes
+ */
+val In<Number>.delayMinutes: In<Number> get() = delay(MINUTES)
+
+/**
+ * Combine latest [other] into a [Pair]
  */
 operator fun <T, S> In<T>.times(other: In<S>): In<Pair<T, S>> =
-//    Observable.combineLatest(this, other, BiFunction { t: T, s: S -> t to s })
-    Observable.never() // FIXME
+    Observable.combineLatest(this, other, BiFunction { o1: T, o2: S -> o1 to o2 })
 
 /**
- * Concat
+ * Concat to [other] In
  */
 operator fun <T> In<T>.div(other: In<T>): In<T> = concatMap { other }
 
 /**
- * Merge
+ * Merge with [other]
  */
 operator fun <T> In<T>.plus(other: In<T>): In<T> = mergeWith(other)
 
-fun <T> In<T>.`do`(out: Out_): In<T> = doOnNext { out.`do` }
+/**
+ * Creates a cold emitter
+ */
+fun <T> cold(): InOut<T> = BehaviorSubject.create<T>()
 
-// Handy aliases
-val Number.delaySeconds: In_ get() = newIn_.delay(toLong(), SECONDS)
-val Number.delayMinutes: In_ get() = newIn_.delay(toLong(), MINUTES)
-val <T> In<T>.ignore: In<T> get() = ignoreElements().toObservable()
-val <T> In<T>.once: In<T> get() = take(1)
-val <T> In<Iterable<T>>.flat: In<T> get() = flatMapIterable { it }
-val <T> In<T>.pairs: In<Pair<T, T>>
-    get() = buffer(2, 1).filter { it.size == 2 }.map { it[0] to it[1] }
+/**
+ * Creates a hot emitter
+ */
+fun <T> hot(): InOut<T> = PublishSubject.create<T>()
 
-// Factories
-val <T> T.`in`: In<T> get() = In.just(this)
-val <T> Iterable<T>.inFlat: In<T> get() = In.fromIterable(this)
-val <T> T.inout: InOut<T> get() = PublishSubject.create<T>()
-val <T> T.out: Out<T> get() = inout
-val <T> T.newInOut: InOut<T> get() = PublishSubject.create()
-val newInOut_: InOut_ get() = Unit.inout
-val newIn_: In_ get() = Unit.`in`
-val newOut_: Out_ get() = newInOut_
+/**
+ * Creates a hot emitter, and emits [item]
+ */
+fun <T> hot(item: T): InOut<T> = hot<T>().also { it + item }
 
-fun <T> In<T>.switchMapAction(run: (t: T) -> Unit): Observable<T> =
-    switchMapCompletable { Completable.fromAction { run(it) } }.toObservable<T>()
+/**
+ * Creates a cold emitter, and emits [item]
+ */
+fun <T> cold(item: T): InOut<T> = cold<T>().also { it + item }
+
+/**
+ * Creates a hot event emitter
+ */
+val hot_: InOut_ get() = hot()
+
+/**
+ * Creates a cold event emitter
+ */
+val cold_: InOut_ get() = cold()
+
+/**
+ * Emits [item]
+ */
+operator fun <T> InOut<T>.plus(item: T): InOut<T> = apply { onNext(item!!) }
+
+/**
+ * Emits [item]
+ */
+operator fun <T> Out<T>.plus(item: T): Out<T> = this as InOut<T> + item
+
+/**
+ * Emits event
+ */
+fun <T> In<T>.`do`(out: Out_): In_ = switchMapAction { out + Unit }
+
+/**
+ * Runs [action]
+ */
+fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
+    switchMapCompletable { fromAction { action(it) } }.toObservable<Unit>()

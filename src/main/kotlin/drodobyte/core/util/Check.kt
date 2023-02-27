@@ -1,4 +1,4 @@
-package drodobyte.core.check
+package drodobyte.core.util
 
 import io.reactivex.Observable
 
