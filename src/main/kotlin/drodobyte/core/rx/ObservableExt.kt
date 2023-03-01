@@ -183,4 +183,4 @@ fun <T> In<T>.`do`(out: Out_): In_ = switchMapAction { out + Unit }
  * Runs [action]
  */
 fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
-    switchMapCompletable { fromAction { action(it) } }.toObservable<Unit>()
+    switchMapCompletable { fromAction { action(it) } }.andThen(just(Unit))
