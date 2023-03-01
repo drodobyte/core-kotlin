@@ -11,6 +11,7 @@ import io.reactivex.subjects.Subject
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /**
  * Read only values
@@ -92,17 +93,30 @@ val <T> In<T>.distinct: In<T> get() = distinctUntilChanged()
 /**
  * Delays stream a number of units
  */
-fun In<Number>.delay(unit: TimeUnit): In<Number> = switchMap { just(it).delay(it.toLong(), unit) }
+fun In<out Number>.delay(unit: TimeUnit): In<out Number> =
+    switchMap { just(it).delay(it.toLong(), unit) }
+
+/**
+ * Delays stream a number of milliseconds
+ */
+val In<out Number>.delayMilli: In<out Number> get() = delay(MILLISECONDS)
 
 /**
  * Delays stream a number of seconds
  */
-val In<Number>.delaySeconds: In<Number> get() = delay(SECONDS)
+val In<out Number>.delaySeconds: In<out Number> get() = delay(SECONDS)
 
 /**
  * Delays stream a number of minutes
  */
-val In<Number>.delayMinutes: In<Number> get() = delay(MINUTES)
+val In<out Number>.delayMinutes: In<out Number> get() = delay(MINUTES)
+
+fun <T> In<T>.delayMilli(seconds: In<out Number>): In<T> = delay(seconds, MILLISECONDS)
+fun <T> In<T>.delaySeconds(seconds: In<out Number>): In<T> = delay(seconds, SECONDS)
+fun <T> In<T>.delayMinutes(seconds: In<out Number>): In<T> = delay(seconds, MINUTES)
+
+fun <T> In<T>.delay(time: In<out Number>, unit: TimeUnit): In<T> =
+    switchMap { t -> time.delay(unit).map { t } }
 
 /**
  * Combine latest [other] into a [Pair]
