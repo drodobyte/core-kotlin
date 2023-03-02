@@ -71,7 +71,7 @@ val In<Boolean>.ifFalse: In_ get() = allow { !it }.map { }
 /**
  * Flattens emitter
  */
-val <T> In<Iterable<T>>.flat: In<T> get() = flatMapIterable { it }
+val <T> In<out Iterable<T>>.flat: In<out T> get() = flatMapIterable { it }
 
 /**
  * Pairs with previous emitted item
