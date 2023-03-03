@@ -24,8 +24,9 @@ open class Rx(private val owner: Any? = null) : OnRx {
 
     protected fun <T> subscribeToSched(items: () -> (In<T>), item: (T) -> Unit, sched: Scheduler) {
         disposable.add(
-            items().subscribeOn(sched)
-//            .observeOn(scheduler)
+            items()
+                .subscribeOn(sched)
+                .observeOn(sched)
                 .subscribe(item, ::log)
         )
     }
