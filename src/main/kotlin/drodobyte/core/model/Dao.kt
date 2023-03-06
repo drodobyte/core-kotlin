@@ -8,14 +8,13 @@ import drodobyte.core.rx.plus
 import drodobyte.core.rx.switchMapAction
 import io.reactivex.Observable
 import io.reactivex.Scheduler
-import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 
 typealias Models<T> = List<T>
 
 open class Dao<T : Model>(
     private val fetchAll: () -> In<Models<T>>,
-    private val saveOne: (T) -> Single<T>,
+    private val saveOne: (T) -> In<T>,
     private val sched: Scheduler = Schedulers.io()
 ) : Rx() {
     private val fetch = hot<Models<T>>()
@@ -35,7 +34,7 @@ open class Dao<T : Model>(
 
     private fun save(pets: Models<T>): In<Models<T>> =
         Observable.fromIterable(pets)
-            .switchMapSingle { saveOne(it) }
+            .switchMap { saveOne(it) }
             .collectInto<Models<T>>(mutableListOf()) { result, model -> result as MutableList += model }
             .toObservable()
 }
