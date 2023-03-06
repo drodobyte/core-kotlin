@@ -5,13 +5,14 @@ import io.reactivex.Observable
 import io.reactivex.Observable.just
 import io.reactivex.Observer
 import io.reactivex.functions.BiFunction
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import io.reactivex.subjects.Subject
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.TimeUnit.SECONDS
-import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /**
  * Read only values
@@ -184,3 +185,8 @@ fun <T> In<T>.`do`(out: Out_): In_ = switchMapAction { out + Unit }
  */
 fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
     switchMapCompletable { fromAction { action(it) } }.andThen(just(Unit))
+
+/**
+ * Subscribes on [Schedulers.io]
+ */
+val <T> In<T>.onIo: In<T> get() = subscribeOn(Schedulers.io())
