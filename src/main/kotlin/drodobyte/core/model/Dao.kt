@@ -25,10 +25,13 @@ open class Dao<T : Model>(
 
     fun by(cond: (T) -> Boolean): In<Models<T>> = all.map { models -> models.filter { cond(it) } }!!
 
-    val save: InOut<Models<T>> = hot()
+    val saveAll: InOut<Models<T>> = hot()
+
+    val save: InOut<T> = hot()
 
     init {
-        on(sched) { save.switchMap(::save).switchMapAction { fetch + it } }
+        on(sched) { saveAll.switchMap(::save).switchMapAction { fetch + it } }
+        on(sched) { save.map { listOf(it) }.switchMap(::save).switchMapAction { fetch + it } }
         on(sched) { fetch.switchMap { fetchAll() } }
     }
 
