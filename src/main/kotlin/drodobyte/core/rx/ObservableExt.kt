@@ -1,6 +1,5 @@
 package drodobyte.core.rx
 
-import io.reactivex.Completable.fromAction
 import io.reactivex.Observable
 import io.reactivex.Observable.just
 import io.reactivex.Observer
@@ -184,7 +183,7 @@ fun <T> In<T>.`do`(out: Out_): In_ = switchMapAction { out + Unit }
  * Runs [action]
  */
 fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
-    switchMapCompletable { fromAction { action(it) } }.andThen(just(Unit))
+    switchMap { item -> Observable.fromCallable { action(item) } }
 
 /**
  * Subscribes on [Schedulers.io]
