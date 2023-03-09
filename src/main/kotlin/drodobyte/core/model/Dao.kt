@@ -19,7 +19,7 @@ open class Dao<T : Model>(
 ) : Rx() {
     private val fetch = hot<Models<T>>()
 
-    val all: In<Models<T>> get() = fetch.startWith(fetchAll())!!.subscribeOn(sched)
+    val all: In<Models<T>> get() = fetch.observeOn(sched).startWith(fetchAll().subscribeOn(sched))!!
 
     fun by(id: Long): In<T> = all.map { it.first { model -> model.id == id } }!!
 
@@ -30,9 +30,9 @@ open class Dao<T : Model>(
     val save: InOut<T> = hot()
 
     init {
-        on(sched) { saveAll.switchMap(::save).switchMapAction { fetch + it } }
-        on(sched) { save.map { listOf(it) }.switchMap(::save).switchMapAction { fetch + it } }
-        on(sched) { fetch.switchMap { fetchAll() } }
+        subs(saveAll.observeOn(sched).switchMap(::save).switchMapAction { fetch + it })
+        subs(save.observeOn(sched).map { listOf(it) }.switchMap(::save).switchMapAction { fetch + it })
+        subs(fetch.observeOn(sched).switchMap { fetchAll() })
     }
 
     private fun save(pets: Models<T>): In<Models<T>> =
