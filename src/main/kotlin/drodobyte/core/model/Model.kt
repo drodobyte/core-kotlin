@@ -10,6 +10,8 @@ interface Model {
         id == null
 }
 
+typealias Models<T> = List<T>
+
 fun Iterable<Model>.nextId() = map { it.id }.maxBy { it ?: 0 } ?: 0
 
 fun <T : Model> MutableList<T>.replace(entity: T) {
