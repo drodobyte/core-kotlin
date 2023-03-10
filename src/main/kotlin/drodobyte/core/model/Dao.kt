@@ -41,7 +41,7 @@ open class Dao<T : Model>(
 
     private fun saveOrUpdate(pets: Models<T>): In<Models<T>> =
         Observable.fromIterable(pets)
-            .switchMap { if (it.isNew()) saveOne(it) else updateOne(it) }
+            .switchMap { if (it.isNone()) saveOne(it) else updateOne(it) }
             .collectInto<Models<T>>(mutableListOf()) { result, model -> result as MutableList += model }
             .toObservable()
 }

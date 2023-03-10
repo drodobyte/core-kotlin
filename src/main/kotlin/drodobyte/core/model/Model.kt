@@ -4,10 +4,9 @@ interface Model {
     val id: Long?
 
     fun isSame(other: Model) =
-        !isNew() && id == other.id && javaClass == other.javaClass
+        !isNone() && id == other.id && javaClass == other.javaClass
 
-    fun isNew(): Boolean =
-        id == null
+    fun isNone() = id == null
 }
 
 typealias Models<T> = List<T>
