@@ -19,10 +19,12 @@ enum class Build {
 }
 
 enum class Data {
-    Mock, Real;
+    Mock, Real, Staging, Prod;
 
     val isMock get() = this == Mock
     val isReal get() = this == Real
+    val isStaging get() = this == Staging
+    val isProd get() = this == Prod
 }
 
 data class Server(val scheme: String, val domain: String) {
