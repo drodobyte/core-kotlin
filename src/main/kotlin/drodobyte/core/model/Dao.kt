@@ -19,7 +19,7 @@ open class Dao<T : Model>(
 
     val all: In<Models<T>> get() = updates + fetchAll().subscribeOn(sched)
 
-    fun by(id: Long): In<T> = by { it.id == id }.map { it.first() }
+    fun by(id: Id): In<T> = by { it.id == id }.map { it.first() }
 
     fun by(cond: (T) -> Boolean): In<Models<T>> = all.map { models -> models.filter { cond(it) } }
 
@@ -41,7 +41,7 @@ open class Dao<T : Model>(
 
     private fun saveOrUpdate(pets: Models<T>): In<Models<T>> =
         Observable.fromIterable(pets)
-            .switchMap { if (it.isNone()) saveOne(it) else updateOne(it) }
+            .switchMap { if (it.isNone) saveOne(it) else updateOne(it) }
             .collectInto<Models<T>>(mutableListOf()) { result, model -> result as MutableList += model }
             .toObservable()
 }
