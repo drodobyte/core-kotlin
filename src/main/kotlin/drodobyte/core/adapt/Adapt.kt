@@ -1,6 +1,6 @@
 package drodobyte.core.adapt
 
-import io.reactivex.ObservableSource
+import drodobyte.core.case.Case
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.util.logging.Level.SEVERE
@@ -11,11 +11,11 @@ import java.util.logging.Logger.getGlobal as logger
  */
 abstract class Adapt {
 
-    protected abstract val source: ObservableSource<*>
+    protected abstract val case: Case
     private lateinit var disposable: Disposable
 
     open fun start() {
-        source.subscribe(object : Observer<Any> {
+        case.src.subscribe(object : Observer<Any> {
             override fun onSubscribe(d: Disposable) {
                 disposable = d
             }

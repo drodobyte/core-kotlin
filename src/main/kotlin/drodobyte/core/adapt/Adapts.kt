@@ -1,20 +1,20 @@
 package drodobyte.core.adapt
 
-import io.reactivex.ObservableSource
+import drodobyte.core.case.Case
 
 /**
- * Helper Compound [drodobyte.core.adapt.Adapt]
+ * Compound [drodobyte.core.adapt.Adapt] helper, use [all] to collect the adapts
  */
 abstract class Adapts : Adapt() {
 
-    protected abstract val adapts: List<Adapt>
-    override lateinit var source: ObservableSource<*>
+    protected abstract val all: List<Adapt>
+    override lateinit var case: Case // Not used
 
     override fun start() {
-        adapts.onEach { it.start() }
+        all.onEach { it.start() }
     }
 
     override fun dispose() {
-        adapts.onEach { it.dispose() }
+        all.onEach { it.dispose() }
     }
 }

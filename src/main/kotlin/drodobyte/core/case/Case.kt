@@ -1,11 +1,11 @@
 package drodobyte.core.case
 
-import drodobyte.core.rx.In
+import io.reactivex.ObservableSource
 
 /**
- * Base Use-Case class
+ * Base Use-Case class: set logic to [src] (emissions will be ignored)
  */
 abstract class Case {
 
-    abstract val result: In<*>
+    abstract val src: ObservableSource<*>
 }

@@ -10,6 +10,9 @@ import io.reactivex.Observable
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
 
+/**
+ * Base Dao providing basic common access methods
+ */
 open class Dao<T : Model>(
     private val fetchAll: () -> In<Models<T>>,
     private val saveOne: (T) -> In<T>,
