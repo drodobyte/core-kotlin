@@ -1,5 +1,8 @@
 package drodobyte.core.util
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Env(
     val build: Build,
     val data: Data,
@@ -27,6 +30,7 @@ enum class Data {
     val isProd get() = this == Prod
 }
 
+@Serializable
 data class Server(val scheme: String, val domain: String) {
     override fun toString() = "$scheme://$domain"
 }
