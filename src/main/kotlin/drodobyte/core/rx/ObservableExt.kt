@@ -3,7 +3,6 @@ package drodobyte.core.rx
 import io.reactivex.Observable
 import io.reactivex.Observable.just
 import io.reactivex.Observer
-import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
@@ -122,7 +121,7 @@ fun <T> In<T>.delay(time: In<out Number>, unit: TimeUnit): In<T> =
  * Combine latest [other] into a [Pair]
  */
 operator fun <T, S> In<T>.times(other: In<S>): In<Pair<T, S>> =
-    Observable.combineLatest(this, other, BiFunction { o1: T, o2: S -> o1 to o2 })
+    Observable.combineLatest(this, other) { o1: T, o2: S -> o1 to o2 }
 
 /**
  * Concat to [other] In
@@ -135,34 +134,19 @@ operator fun <T> In<T>.div(other: In<T>): In<T> = concatMap { other }
 operator fun <T> In<T>.plus(other: In<T>): In<T> = mergeWith(other)
 
 /**
- * Creates a cold emitter
+ * Creates a [InOut]. [cacheLast] Caches the latest element observed for future subscribers.
  */
-fun <T> cold(): InOut<T> = BehaviorSubject.create<T>()
+fun <T> io(cacheLast: Boolean = false): InOut<T> = _io(cacheLast)
 
 /**
- * Creates a hot emitter
+ * Creates a cached [InOut] and emits [item]
  */
-fun <T> hot(): InOut<T> = PublishSubject.create<T>()
+fun <T> io(item: T): InOut<T> = io<T>(cacheLast = true).also { it + item }
 
 /**
- * Creates a hot emitter, and emits [item]
+ * Creates a [InOut] for events. [cacheLast] Caches the latest event observed for future subscribers.
  */
-fun <T> hot(item: T): InOut<T> = hot<T>().also { it + item }
-
-/**
- * Creates a cold emitter, and emits [item]
- */
-fun <T> cold(item: T): InOut<T> = cold<T>().also { it + item }
-
-/**
- * Creates a hot event emitter
- */
-val hot_: InOut_ get() = hot()
-
-/**
- * Creates a cold event emitter
- */
-val cold_: InOut_ get() = cold()
+fun io_(cacheLast: Boolean = false): InOut_ = io(cacheLast)
 
 /**
  * Emits [item]
@@ -189,3 +173,5 @@ fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
  * Subscribes on [Schedulers.io]
  */
 val <T> In<T>.onIo: In<T> get() = subscribeOn(Schedulers.io())
+
+private fun <T> _io(cache: Boolean) = if (cache) BehaviorSubject.create<T>() else PublishSubject.create<T>()

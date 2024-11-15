@@ -3,7 +3,7 @@ package drodobyte.core.model
 import drodobyte.core.rx.In
 import drodobyte.core.rx.InOut
 import drodobyte.core.rx.Rx
-import drodobyte.core.rx.hot
+import drodobyte.core.rx.io
 import drodobyte.core.rx.plus
 import drodobyte.core.rx.switchMapAction
 import io.reactivex.Observable
@@ -26,9 +26,9 @@ open class Dao<T : Model>(
 
     fun by(cond: (T) -> Boolean): In<Models<T>> = all.map { models -> models.filter { cond(it) } }
 
-    val saveAll: InOut<Models<T>> = hot()
+    val saveAll: InOut<Models<T>> = io<Models<T>>()
 
-    val save: InOut<T> = hot()
+    val save: InOut<T> = io<T>()
 
     init {
         subs(
@@ -40,7 +40,7 @@ open class Dao<T : Model>(
         )
     }
 
-    private val updates = hot<Models<T>>()
+    private val updates = io<Models<T>>()
 
     private fun saveOrUpdate(pets: Models<T>): In<Models<T>> =
         Observable.fromIterable(pets)
