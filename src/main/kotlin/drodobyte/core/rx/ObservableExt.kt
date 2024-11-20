@@ -170,6 +170,12 @@ fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
     switchMap { item -> Observable.fromCallable { action(item) } }
 
 /**
+ * Runs [action] on error
+ */
+fun <T> In<T>.onError(action: (Throwable) -> Unit): In_ =
+    map { }.onErrorResumeNext { e: Throwable -> just(e).switchMapAction { action(it) } }
+
+/**
  * Subscribes on [Schedulers.io]
  */
 val <T> In<T>.onIo: In<T> get() = subscribeOn(Schedulers.io())
