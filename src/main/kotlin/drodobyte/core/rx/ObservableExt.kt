@@ -58,6 +58,11 @@ val <T> In<T>.ignore: In<T> get() = filter { false }
 fun <T> In<T>.allow(cond: (T) -> Boolean): In<T> = filter { cond(it) }
 
 /**
+ * Same as [allow]
+ */
+fun <T> In<T>.`if`(cond: (T) -> Boolean): In<T> = filter { cond(it) }
+
+/**
  * Emit event if item is true
  */
 val In<Boolean>.ifTrue: In_ get() = allow { it }.map { }
