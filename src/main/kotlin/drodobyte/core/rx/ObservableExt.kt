@@ -1,5 +1,6 @@
 package drodobyte.core.rx
 
+import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Observable.just
 import io.reactivex.Observer
@@ -166,26 +167,33 @@ operator fun <T> Out<T>.plus(item: T): Out<T> = this as InOut<T> + item
 /**
  * Emits event
  */
-fun <T> In<T>.`do`(out: Out_): In_ = switchMapAction { out + Unit }
+fun <T> In<T>.`do`(out: Out_): In_ = act { out + Unit }
 
 /**
  * Runs [action]
  */
+@Deprecated(message = "use other with nicer interface", replaceWith = ReplaceWith("act"))
 fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
     switchMap { item -> Observable.fromCallable { action(item) } }
+
+fun <T> In<T>.act(action: (T) -> Unit): In_ =
+    switchMap { item -> Observable.fromCallable { action(item) } }
+
+fun <T> In<T>.act(out: Out<T>): In_ =
+    switchMap { item -> Observable.fromCallable { out.onNext(item) } }
 
 /**
  * Runs [action] on error. It terminates the source
  */
 @Deprecated(message = "Deprecated in favor of a recoverable one", replaceWith = ReplaceWith("catch"))
 fun <T> In<T>.onError(action: (Throwable) -> Unit): In_ =
-    map { }.onErrorResumeNext { e: Throwable -> just(e).switchMapAction { action(it) } }
+    map { }.onErrorResumeNext { e: Throwable -> just(e).act { action(it) } }
 
 /**
  * Same as [onError] but recovers from error (does not terminate the source)
  */
 fun <T> In<T>.catch(action: (Throwable) -> Unit): In<T> =
-    retryWhen { e -> e.switchMapAction(action) }
+    retryWhen { e -> e.act(action) }
 
 /**
  * Subscribes on [Schedulers.io]
