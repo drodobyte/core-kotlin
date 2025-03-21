@@ -2,7 +2,7 @@ package drodobyte.core.model
 
 import java.util.UUID
 
-typealias Id = String
+typealias Id = String // TODO as Value class
 
 //typealias Id = UUID
 //typealias Id = Long
