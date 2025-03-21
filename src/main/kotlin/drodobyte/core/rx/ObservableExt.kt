@@ -175,10 +175,17 @@ fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
     switchMap { item -> Observable.fromCallable { action(item) } }
 
 /**
- * Runs [action] on error
+ * Runs [action] on error. It terminates the source
  */
+@Deprecated(message = "Deprecated in favor of a recoverable one", replaceWith = ReplaceWith("catch"))
 fun <T> In<T>.onError(action: (Throwable) -> Unit): In_ =
     map { }.onErrorResumeNext { e: Throwable -> just(e).switchMapAction { action(it) } }
+
+/**
+ * Same as [onError] but recovers from error (does not terminate the source)
+ */
+fun <T> In<T>.catch(action: (Throwable) -> Unit): In<T> =
+    retryWhen { e -> e.switchMapAction(action) }
 
 /**
  * Subscribes on [Schedulers.io]
