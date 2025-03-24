@@ -3,9 +3,9 @@ package drodobyte.core.model
 import drodobyte.core.rx.In
 import drodobyte.core.rx.InOut
 import drodobyte.core.rx.Rx
+import drodobyte.core.rx.act
 import drodobyte.core.rx.io
 import drodobyte.core.rx.plus
-import drodobyte.core.rx.switchMapAction
 import io.reactivex.Observable
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
@@ -36,7 +36,7 @@ open class Dao<T : Model>(
                 .observeOn(sched)
                 .switchMap(::saveOrUpdate)
                 .switchMap { fetchAll() }
-                .switchMapAction { updates + it }
+                .act { updates + it }
         )
     }
 
