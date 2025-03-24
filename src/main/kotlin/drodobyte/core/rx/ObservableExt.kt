@@ -1,6 +1,5 @@
 package drodobyte.core.rx
 
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Observable.just
 import io.reactivex.Observer
@@ -54,24 +53,19 @@ val <T> In<T>.once: In<T> get() = take(1)
 val <T> In<T>.ignore: In<T> get() = filter { false }
 
 /**
- * Emit items that comply with [cond]
- */
-fun <T> In<T>.allow(cond: (T) -> Boolean): In<T> = filter { cond(it) }
-
-/**
- * Same as [allow]
+ * Emit items if [cond] is true
  */
 fun <T> In<T>.`if`(cond: (T) -> Boolean): In<T> = filter { cond(it) }
 
 /**
  * Emit event if item is true
  */
-val In<Boolean>.ifTrue: In_ get() = allow { it }.map { }
+val In<Boolean>.ifTrue: In_ get() = `if` { it }.map { }
 
 /**
  * Emit event if item is false
  */
-val In<Boolean>.ifFalse: In_ get() = allow { !it }.map { }
+val In<Boolean>.ifFalse: In_ get() = `if` { !it }.map { }
 
 /**
  * Flattens emitter
@@ -163,18 +157,6 @@ operator fun <T> InOut<T>.plus(item: T): InOut<T> = apply { onNext(item!!) }
  * Emits [item]
  */
 operator fun <T> Out<T>.plus(item: T): Out<T> = this as InOut<T> + item
-
-/**
- * Emits event
- */
-fun <T> In<T>.`do`(out: Out_): In_ = act { out + Unit }
-
-/**
- * Runs [action]
- */
-@Deprecated(message = "use other with nicer interface", replaceWith = ReplaceWith("act"))
-fun <T> In<T>.switchMapAction(action: (T) -> Unit): In_ =
-    switchMap { item -> Observable.fromCallable { action(item) } }
 
 fun <T> In<T>.act(action: (T) -> Unit): In_ =
     switchMap { item -> Observable.fromCallable { action(item) } }
