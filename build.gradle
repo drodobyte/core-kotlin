@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'drodobyte'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 sourceCompatibility = 1.8
 
@@ -37,18 +37,17 @@ task packageSources(type: Jar, dependsOn: 'classes') {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact packageSources
+        gpr(MavenPublication) {
+            from(components.java)
         }
     }
     repositories {
         maven {
-            name 'deploy'
-            url System.getenv('deployRepoUrl')
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/drodobyte/core-kotlin")
             credentials {
-                username = System.getenv('deployRepoUsername')
-                password = System.getenv('deployRepoPassword')
+                username = System.getenv("GITUSERNAME")
+                password = System.getenv("GITTOKEN")
             }
         }
     }
