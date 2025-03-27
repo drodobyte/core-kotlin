@@ -1,11 +1,16 @@
 package drodobyte.core.util
 
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.*
+
 
 val Date.formatted: String get() = DateFormat.getDateInstance().format(this)
 
-val String.date: Date get() = DateFormat.getDateInstance().parse(this)
+/**
+ * format 'dd-MMM-yyyy'
+ */
+val String.date: Date get() = formatter.parse(this)
 
 val CharSequence.date get() = toString().date
 
@@ -21,3 +26,5 @@ val Triple<Int, Int, Int>.date: Date
     }.time
 
 val Date.calendar: Calendar get() = Calendar.getInstance().also { it.time = this }
+
+private var formatter = SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH)
