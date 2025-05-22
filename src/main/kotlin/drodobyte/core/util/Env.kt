@@ -12,6 +12,8 @@ data class Env(
     val isDebug = build.isDebug
     val isMock = data.isMock
     val isReal = data.isReal
+    val isProd = data.isProd
+    val isStaging = data.isStaging
 }
 
 enum class Build {
